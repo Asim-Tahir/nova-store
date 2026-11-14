@@ -1,0 +1,15 @@
+{
+  "name": "nova-store",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "unify-queries": "node scripts/unify-queries.ts",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}
