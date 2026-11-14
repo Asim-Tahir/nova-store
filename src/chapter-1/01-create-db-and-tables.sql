@@ -8,14 +8,14 @@ USE NovaStoreDB;
 
 -- 1.2 Create Tables
 CREATE TABLE [dbo].[Categories] (
-  [CategoryID]   INT          IDENTITY (1, 1) NOT NULL,
-  [CategoryName] VARCHAR (50) NOT NULL,
+  [CategoryID]   INT           IDENTITY (1, 1) NOT NULL,
+  [CategoryName] NVARCHAR (50) NOT NULL,
   PRIMARY KEY ([CategoryID])
 );
 
 CREATE TABLE [dbo].[Products] (
   [ProductID]   INT             IDENTITY (1, 1) NOT NULL,
-  [ProductName] VARCHAR (100)   NOT NULL,
+  [ProductName] NVARCHAR (100)  NOT NULL,
   [Price]       DECIMAL (10, 2),
   [Stock]       INT             DEFAULT 0,
   [CategoryID]  INT            ,
@@ -25,8 +25,8 @@ CREATE TABLE [dbo].[Products] (
 
 CREATE TABLE [dbo].[Customers] (
   [CustomerID] INT           IDENTITY (1, 1) NOT NULL,
-  [FullName]   VARCHAR (50) ,
-  [City]       VARCHAR (20) ,
+  [FullName]   NVARCHAR (50),
+  [City]       NVARCHAR (20),
   [Email]      VARCHAR (100) UNIQUE,
   PRIMARY KEY ([CustomerID])
 );
