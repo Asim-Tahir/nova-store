@@ -1,6 +1,10 @@
 -- 3.2 Data Join
 -- Question: Which customer placed the order on which date? The result will show Customer Name, City, Order Date and Total Amount.
 -- Using: INNER JOIN (Customers and Orders tables).
+USE NovaStoreDB;
+
+
+GO
 SELECT
   c.FullName AS MusteriAdi,
   c.City AS Sehir,

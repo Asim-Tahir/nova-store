@@ -1,6 +1,10 @@
 -- 3.3 Multiple Join and Detail Reports
 -- Question: List the names, prices, and categories of products purchased by customer named "Ahmet Yılmaz" (or a customer in your data).
 -- Using: JOIN (Customers, Orders, OrderDetails, Products, Categories tables will be chained).
+USE NovaStoreDB;
+
+
+GO
 SELECT
   c.FullName AS MusteriAdi,
   p.ProductName AS UrunAdi,

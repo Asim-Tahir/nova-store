@@ -2,6 +2,10 @@
 -- 3.1 Basic Listing
 -- Question: List the name and stock quantity of products with less than 20 items in stock in "DESCENDING" order by stock quantity.
 -- Using: SELECT, WHERE, ORDER BY.
+USE NovaStoreDB;
+
+
+GO
 SELECT
   ProductName,
   Stock
