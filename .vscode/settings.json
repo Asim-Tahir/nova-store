@@ -1,4 +1,15 @@
 {
+  "mssql.format.options.clauseBodyAlignment": "indented",
+  "mssql.format.options.newLineAfterJoinKeyword": false,
+  "mssql.format.options.newLineBeforeJoinClause": true,
+  "mssql.format.options.newLineBeforeOnClause": false,
+  "mssql.format.options.spaceBetweenDataTypeAndParameters": false,
+  "mssql.format.options.multilineInValuesList": true,
+  "mssql.format.options.indentViewBody": true,
+  "mssql.format.options.indentSetClause": true,
+  "[sql]": {
+    "editor.defaultFormatter": "ms-mssql.mssql"
+  },
   "nodejs-testing.extensions": [
     {
       "extensions": [
@@ -7,7 +18,9 @@
         "ts"
       ],
       "parameters": [],
-      "filePatterns": ["**/*.test.ts"],
+      "filePatterns": [
+        "**/*.test.ts"
+      ],
     }
   ]
 }
