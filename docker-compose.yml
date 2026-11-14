@@ -1,0 +1,25 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: nova_store_db
+    # https://hub.docker.com/r/microsoft/mssql-server/#environment-variables
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD to a strong password}"
+      MSSQL_PID: StandardDeveloper
+    ports:
+      - "1433:1433"
+    volumes:
+      - nova_store_data:/var/opt/mssql
+    networks:
+      - nova_store_network
+    platform: linux/amd64
+
+volumes:
+  nova_store_data:
+    name: nova_store_data
+    external: true
+
+networks:
+  nova_store_network:
+    name: nova_store_network
