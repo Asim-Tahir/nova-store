@@ -6,6 +6,7 @@ SET XACT_ABORT ON;
 DECLARE @OrderMap TABLE (
   [OrderDate] DATETIME NOT NULL PRIMARY KEY,
   [OrderID]   INT      NOT NULL);
+DECLARE @InsertedOrderDetails TABLE ([DetailID] INT NOT NULL);
 
 BEGIN TRY
   BEGIN TRANSACTION;
@@ -30,6 +31,7 @@ BEGIN TRY
     [ProductID],
     [Quantity]
   )
+  OUTPUT inserted.[DetailID] INTO @InsertedOrderDetails ([DetailID])
   SELECT orderMap.[OrderID],
          product.[ProductID],
          detail.[Quantity]
@@ -40,7 +42,8 @@ BEGIN TRY
          INNER JOIN
          [dbo].[Products] AS product
          ON product.[ProductName] = detail.[ProductName];
-  IF @@ROWCOUNT <> 16
+  IF (SELECT COUNT(*)
+      FROM   @InsertedOrderDetails) <> 16
     THROW 50002, 'Expected 16 order details; verify that all product records exist.', 1;
   COMMIT TRANSACTION;
 END TRY
