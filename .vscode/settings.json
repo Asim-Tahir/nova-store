@@ -1,0 +1,13 @@
+{
+  "nodejs-testing.extensions": [
+    {
+      "extensions": [
+        "mts",
+        "cts",
+        "ts"
+      ],
+      "parameters": [],
+      "filePatterns": ["**/*.test.ts"],
+    }
+  ]
+}
