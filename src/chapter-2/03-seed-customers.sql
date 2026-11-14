@@ -6,9 +6,9 @@ INSERT  INTO [dbo].[Customers] (
   [City],
   [Email]
 )
-VALUES                         (N'Ayse Yilmaz', N'Istanbul', N'ayse.yilmaz@example.com'),
+VALUES                         (N'Ayşe Yılmaz', N'İstanbul', N'ayse.yilmaz@example.com'),
                                (N'Mehmet Demir', N'Ankara', N'mehmet.demir@example.com'),
-                               (N'Elif Kaya', N'Izmir', N'elif.kaya@example.com'),
+                               (N'Elif Kaya', N'İzmir', N'elif.kaya@example.com'),
                                (N'Can Arslan', N'Bursa', N'can.arslan@example.com'),
-                               (N'Zeynep Sahin', N'Antalya', N'zeynep.sahin@example.com'),
-                               (N'Deniz Celik', N'Eskisehir', N'deniz.celik@example.com');
+                               (N'Zeynep Şahin', N'Antalya', N'zeynep.sahin@example.com'),
+                               (N'Deniz Çelik', N'Eskişehir', N'deniz.celik@example.com');
