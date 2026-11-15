@@ -5,10 +5,13 @@
     "moduleResolution": "NodeNext",
     "strict": true,
     "noEmit": true,
+    "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "satori/jsx",
     "types": ["node"]
   },
-  "include": ["scripts/**/*.ts"]
+  "include": ["scripts/**/*.ts", "scripts/**/*.tsx"]
 }
