@@ -11,7 +11,7 @@
     "verbatimModuleSyntax": true,
     "jsx": "react-jsx",
     "jsxImportSource": "satori/jsx",
-    "types": ["node"]
+    "types": ["node", "mssql"]
   },
   "include": ["scripts/**/*.ts", "scripts/**/*.tsx"]
 }
