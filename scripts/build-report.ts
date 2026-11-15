@@ -1,6 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { styleText } from "node:util";
 import { fileURLToPath } from "node:url";
 
 import { Document, HeadingLevel, ImageRun, Packer, Paragraph, TextRun } from "docx";
@@ -8,6 +7,7 @@ import sharp from "sharp";
 
 import { renderReportResultTablePNG } from "./report-result-table.tsx";
 import {
+  logger,
   validateDirectory,
   validateExtension,
   validateFile,
@@ -279,7 +279,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
   const files = await buildReport(outputDir, docxPath);
 
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Rendered ${files.length} PNG images in ${outputDir}`);
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} DOCX: ${docxPath}`);
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Summary: ${JSON.stringify(files, null, 2)}`);
+  logger.info(`Rendered ${files.length} PNG images in ${outputDir}`);
+  logger.info(`DOCX: ${docxPath}`);
+  logger.info(`Summary: ${JSON.stringify(files, null, 2)}`);
 }
