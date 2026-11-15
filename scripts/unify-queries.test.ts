@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -57,6 +57,43 @@ test("uses the source directory and output path passed to the CLI", async () => 
       await readFile(outputFile, "utf8"),
       "SELECT 2;\n\nSELECT 10file;\n\nSELECT nested;\n\nSELECT 10;\n",
     );
+  } finally {
+    await cleanupEnvironment();
+  }
+});
+
+test("rejects a SQL source path that is not a directory", async () => {
+  const { projectDir, outputFile, cleanupEnvironment } = await setupEnvironment("unify-queries-source-");
+  const sourceFile = join(projectDir, "not-a-directory.sql");
+  const scriptFile = fileURLToPath(new URL("./unify-queries.ts", import.meta.url));
+
+  try {
+    await writeFile(sourceFile, "not a source directory");
+    const result = spawnSync(process.execPath, [scriptFile, sourceFile, outputFile], {
+      encoding: "utf8",
+    });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /SQL source path must be an existing directory/);
+    assert.equal(await readFile(outputFile, "utf8"), "");
+  } finally {
+    await cleanupEnvironment();
+  }
+});
+
+test("rejects an output path without a .sql extension", async () => {
+  const { projectDir, sourceDir, cleanupEnvironment } = await setupEnvironment("unify-queries-output-");
+  const outputFile = join(projectDir, "custom-query.txt");
+  const scriptFile = fileURLToPath(new URL("./unify-queries.ts", import.meta.url));
+
+  try {
+    const result = spawnSync(process.execPath, [scriptFile, sourceDir, outputFile], {
+      encoding: "utf8",
+    });
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /SQL output path must use the \.sql extension/);
+    assert.deepEqual((await readdir(projectDir)).sort(), ["NovaStore_Proje.sql", "src"]);
   } finally {
     await cleanupEnvironment();
   }

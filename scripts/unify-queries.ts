@@ -3,6 +3,8 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { styleText } from "node:util";
 import { fileURLToPath } from "node:url";
 
+import { validateDirectory, validateExtension, validateFile } from "#scripts/utils";
+
 const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
 
 function compareAlphanumeric(left: string, right: string): number {
@@ -46,6 +48,10 @@ const DEFAULT_SQL_OUTPUT_PATH = resolve(projectRoot, ".output/NovaStore_Proje.sq
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   const sqlSourceDir = process.argv[2] ? resolve(process.argv[2]) : DEFAULT_SQL_SOURCE_DIR;
   const sqlOutputPath = process.argv[3] ? resolve(process.argv[3]) : DEFAULT_SQL_OUTPUT_PATH;
+
+  validateExtension(sqlOutputPath, ".sql", "SQL output path must use the .sql extension.", false);
+  await validateDirectory(sqlSourceDir, "SQL source path must be an existing directory.", false);
+  await validateFile(sqlOutputPath, "SQL output path must be a file.");
 
   const count = await unifyQueries(sqlSourceDir, sqlOutputPath);
 
