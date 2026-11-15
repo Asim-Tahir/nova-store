@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "unify-queries": "node scripts/unify-queries.ts",
-    "test": "node --test"
+    "unify-queries": "tsx scripts/unify-queries.ts",
+    "test": "tsx --test"
   },
   "devDependencies": {
-    "@types/node": "^26.6.6"
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15"
   },
   "engines": {
     "node": ">=22.18.0"
