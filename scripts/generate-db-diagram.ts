@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, extname, resolve } from "node:path";
 import { styleText } from "node:util";
@@ -68,9 +68,23 @@ export function resolveDiagramOutputPaths(
     throw new Error("PNG output path must use the .png extension.");
   }
 
+  const resolvedPaths = [
+    ["Mermaid", resolve(projectRoot, mermaidPath)],
+    ["PNG", resolve(projectRoot, pngPath)],
+  ] as const;
+  for (const [label, outputPath] of resolvedPaths) {
+    const outputDirectory = dirname(outputPath);
+    if (existsSync(outputDirectory) && !statSync(outputDirectory).isDirectory()) {
+      throw new Error(`${label} output directory must be a directory: ${outputDirectory}`);
+    }
+    if (existsSync(outputPath) && statSync(outputPath).isDirectory()) {
+      throw new Error(`${label} output path must be a file, not a directory: ${outputPath}`);
+    }
+  }
+
   return {
-    mermaidPath: resolve(projectRoot, mermaidPath) as `${string}.mmd`,
-    pngPath: resolve(projectRoot, pngPath) as `${string}.png`,
+    mermaidPath: resolvedPaths[0][1] as `${string}.mmd`,
+    pngPath: resolvedPaths[1][1] as `${string}.png`,
   };
 }
 
@@ -235,10 +249,7 @@ async function getDatabaseSchema(pool: sql.ConnectionPool): Promise<DatabaseTabl
   return [...tables.values()];
 }
 
-async function generateDatabaseDiagram(
-  mermaidPath = DEFAULT_MERMAID_OUTPUT_PATH,
-  pngPath = DEFAULT_PNG_OUTPUT_PATH,
-): Promise<DiagramOutputPaths> {
+async function generateDatabaseDiagram(paths: DiagramOutputPaths): Promise<DiagramOutputPaths> {
   const envFile = resolve(projectRoot, ".env");
   if (existsSync(envFile)) {
     process.loadEnvFile(envFile);
@@ -255,8 +266,6 @@ async function generateDatabaseDiagram(
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
     throw new Error("MSSQL_PORT must be an integer between 1 and 65535.");
   }
-  const paths = resolveDiagramOutputPaths(mermaidPath, pngPath);
-
   const pool = new sql.ConnectionPool({
     server,
     port,
@@ -290,8 +299,8 @@ async function generateDatabaseDiagram(
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   const mermaidPath = process.argv[2] ?? DEFAULT_MERMAID_OUTPUT_PATH;
   const pngPath = process.argv[3] ?? DEFAULT_PNG_OUTPUT_PATH;
-  const paths = await generateDatabaseDiagram(mermaidPath, pngPath);
-  console.log(
-    `${styleText(["bgBlue", "white"], " INFO ")} Wrote ${paths.mermaidPath} and ${paths.pngPath}`,
-  );
+  const paths = resolveDiagramOutputPaths(mermaidPath, pngPath);
+
+  const outputPaths = await generateDatabaseDiagram(paths);
+  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Wrote ${outputPaths.mermaidPath} and ${outputPaths.pngPath}`);
 }

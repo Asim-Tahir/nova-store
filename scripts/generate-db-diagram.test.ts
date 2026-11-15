@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
@@ -71,6 +71,54 @@ test("rejects output paths with the wrong extensions", () => {
     () => resolveDiagramOutputPaths(".output/schema.mmd", ".output/schema.svg"),
     /\.png/,
   );
+});
+
+test("requires each output parent path to be a directory", async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), "nova-store-db-diagram-"));
+  const filePath = join(outputDir, "not-a-directory");
+
+  try {
+    await writeFile(filePath, "existing file");
+    assert.throws(
+      () =>
+        resolveDiagramOutputPaths(
+          join(filePath, "schema.mmd"),
+          join(outputDir, "schema.png"),
+        ),
+      /Mermaid output directory must be a directory/,
+    );
+    assert.throws(
+      () =>
+        resolveDiagramOutputPaths(
+          join(outputDir, "schema.mmd"),
+          join(filePath, "schema.png"),
+        ),
+      /PNG output directory must be a directory/,
+    );
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects directories used as output files", async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), "nova-store-db-diagram-"));
+  const mermaidPath = join(outputDir, "schema.mmd");
+  const pngPath = join(outputDir, "schema.png");
+
+  try {
+    await mkdir(mermaidPath);
+    await mkdir(pngPath);
+    assert.throws(
+      () => resolveDiagramOutputPaths(mermaidPath, join(outputDir, "other.png")),
+      /Mermaid output path must be a file/,
+    );
+    assert.throws(
+      () => resolveDiagramOutputPaths(join(outputDir, "other.mmd"), pngPath),
+      /PNG output path must be a file/,
+    );
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
 });
 
 test("renders a Mermaid diagram to PNG through the Node API", async () => {
