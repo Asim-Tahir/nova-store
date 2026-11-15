@@ -1,12 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { styleText } from "node:util";
 import { fileURLToPath } from "node:url";
 
 import { run } from "@mermaid-js/mermaid-cli";
 import sql from "mssql";
 
-import { isFileExists, validateDirectory, validateExtension, validateFile } from "#scripts/utils";
+import { isFileExists, logger, validateDirectory, validateExtension, validateFile } from "#scripts/utils";
 
 export interface DatabaseColumn {
   name: string;
@@ -305,5 +304,5 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
   const paths = await resolveDiagramOutputPaths(mermaidPath, pngPath);
 
   const outputPaths = await generateDatabaseDiagram(paths);
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Wrote ${outputPaths.mermaidPath} and ${outputPaths.pngPath}`);
+  logger.info(`Wrote ${outputPaths.mermaidPath} and ${outputPaths.pngPath}`);
 }
