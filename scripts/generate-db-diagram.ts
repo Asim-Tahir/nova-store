@@ -112,6 +112,13 @@ function uniqueIdentifier(name: string, used: Set<string>): string {
   return candidate;
 }
 
+function loadDotEnvFile(dotEnvFile: string = ".env"): void {
+  const envFile = resolve(projectRoot, dotEnvFile);
+  if (existsSync(envFile)) {
+    process.loadEnvFile(envFile);
+  }
+}
+
 export function buildMermaidDiagram(tables: DatabaseTable[]): string {
   if (tables.length === 0) {
     throw new Error("No user tables found in the database.");
@@ -250,10 +257,7 @@ async function getDatabaseSchema(pool: sql.ConnectionPool): Promise<DatabaseTabl
 }
 
 async function generateDatabaseDiagram(paths: DiagramOutputPaths): Promise<DiagramOutputPaths> {
-  const envFile = resolve(projectRoot, ".env");
-  if (existsSync(envFile)) {
-    process.loadEnvFile(envFile);
-  }
+  loadDotEnvFile();
 
   const username = process.env.MSSQL_SA_USERNAME;
   const password = process.env.MSSQL_SA_PASSWORD;
