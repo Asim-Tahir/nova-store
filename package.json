@@ -8,6 +8,12 @@
     "generate-db-diagram": "tsx scripts/generate-db-diagram.ts",
     "test": "tsx --test"
   },
+  "imports": {
+    "#scripts/utils": {
+      "default": "./scripts/utils/index.ts",
+      "import": "./scripts/utils/undex.ts"
+    }
+  },
   "devDependencies": {
     "@fontsource/roboto": "^5.3.0",
     "@mermaid-js/mermaid-cli": "^12.2.0",
