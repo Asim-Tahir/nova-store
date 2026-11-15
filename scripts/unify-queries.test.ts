@@ -23,6 +23,7 @@ async function setupEnvironment(tempDirName: string) {
   await writeFile(outputFile, "");
 
   return {
+    projectDir,
     sourceDir,
     outputFile,
     cleanupEnvironment: () => rm(projectDir, { recursive: true, force: true }),
@@ -44,16 +45,19 @@ test("joins SQL files recursively in alphanumeric folder and filename order", as
   }
 });
 
-test("writes to the output path passed to the CLI", async () => {
-  const projectDir = await mkdtemp(join(tmpdir(), "unify-queries-output-"));
+test("uses the source directory and output path passed to the CLI", async () => {
+  const { projectDir, sourceDir, cleanupEnvironment } = await setupEnvironment("unify-queries-cli-");
   const outputFile = join(projectDir, "custom-query.sql");
   const scriptFile = fileURLToPath(new URL("./unify-queries.ts", import.meta.url));
 
   try {
-    execFileSync(process.execPath, [scriptFile, outputFile]);
+    execFileSync(process.execPath, [scriptFile, sourceDir, outputFile]);
 
-    assert.match(await readFile(outputFile, "utf8"), /CREATE DATABASE NovaStoreDB;/);
+    assert.equal(
+      await readFile(outputFile, "utf8"),
+      "SELECT 2;\n\nSELECT 10file;\n\nSELECT nested;\n\nSELECT 10;\n",
+    );
   } finally {
-    await rm(projectDir, { recursive: true, force: true });
+    await cleanupEnvironment();
   }
 });

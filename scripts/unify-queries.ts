@@ -40,9 +40,14 @@ export async function unifyQueries(sourceDir: string, outputFile: string): Promi
 }
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  const outputFile = process.argv[2] ? resolve(process.argv[2]) : resolve(projectRoot, "NovaStore_Proje.sql");
-  const count = await unifyQueries(resolve(projectRoot, "src/sql"), outputFile);
+const DEFAULT_SQL_SOURCE_DIR = resolve(projectRoot, "src/sql");
+const DEFAULT_SQL_OUTPUT_PATH = resolve(projectRoot, ".output/NovaStore_Proje.sql");
 
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Joined ${count} SQL files into ${outputFile}`);
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  const sqlSourceDir = process.argv[2] ? resolve(process.argv[2]) : DEFAULT_SQL_SOURCE_DIR;
+  const sqlOutputPath = process.argv[3] ? resolve(process.argv[3]) : DEFAULT_SQL_OUTPUT_PATH;
+
+  const count = await unifyQueries(sqlSourceDir, sqlOutputPath);
+
+  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Joined ${count} SQL files into ${sqlOutputPath}`);
 }
