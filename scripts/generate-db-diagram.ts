@@ -1,11 +1,12 @@
-import { existsSync, statSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, extname, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { styleText } from "node:util";
 import { fileURLToPath } from "node:url";
 
 import { run } from "@mermaid-js/mermaid-cli";
 import sql from "mssql";
+
+import { validateDirectory, validateExtension, validateFile } from "#scripts/utils";
 
 export interface DatabaseColumn {
   name: string;
@@ -57,16 +58,12 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_MERMAID_OUTPUT_PATH = ".output/NovaStore_Proje.mmd";
 const DEFAULT_PNG_OUTPUT_PATH = ".output/NovaStore_Proje.png";
 
-export function resolveDiagramOutputPaths(
+export async function resolveDiagramOutputPaths(
   mermaidPath = DEFAULT_MERMAID_OUTPUT_PATH,
   pngPath = DEFAULT_PNG_OUTPUT_PATH,
-): DiagramOutputPaths {
-  if (extname(mermaidPath) !== ".mmd") {
-    throw new Error("Mermaid output path must use the .mmd extension.");
-  }
-  if (extname(pngPath) !== ".png") {
-    throw new Error("PNG output path must use the .png extension.");
-  }
+): Promise<DiagramOutputPaths> {
+  validateExtension(mermaidPath, ".mmd", "Mermaid output path must use the .mmd extension.");
+  validateExtension(pngPath, ".png", "PNG output path must use the .png extension.");
 
   const resolvedPaths = [
     ["Mermaid", resolve(projectRoot, mermaidPath)],
@@ -74,12 +71,14 @@ export function resolveDiagramOutputPaths(
   ] as const;
   for (const [label, outputPath] of resolvedPaths) {
     const outputDirectory = dirname(outputPath);
-    if (existsSync(outputDirectory) && !statSync(outputDirectory).isDirectory()) {
-      throw new Error(`${label} output directory must be a directory: ${outputDirectory}`);
-    }
-    if (existsSync(outputPath) && statSync(outputPath).isDirectory()) {
-      throw new Error(`${label} output path must be a file, not a directory: ${outputPath}`);
-    }
+    await validateDirectory(
+      outputDirectory,
+      `${label} output directory must be a directory: ${outputDirectory}`,
+    );
+    await validateFile(
+      outputPath,
+      `${label} output path must be a file, not a directory: ${outputPath}`,
+    );
   }
 
   return {
@@ -303,7 +302,7 @@ async function generateDatabaseDiagram(paths: DiagramOutputPaths): Promise<Diagr
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   const mermaidPath = process.argv[2] ?? DEFAULT_MERMAID_OUTPUT_PATH;
   const pngPath = process.argv[3] ?? DEFAULT_PNG_OUTPUT_PATH;
-  const paths = resolveDiagramOutputPaths(mermaidPath, pngPath);
+  const paths = await resolveDiagramOutputPaths(mermaidPath, pngPath);
 
   const outputPaths = await generateDatabaseDiagram(paths);
   console.log(`${styleText(["bgBlue", "white"], " INFO ")} Wrote ${outputPaths.mermaidPath} and ${outputPaths.pngPath}`);

@@ -52,8 +52,8 @@ test("builds Mermaid ER entities and foreign-key relationships", () => {
   );
 });
 
-test("resolves custom Mermaid and PNG paths independently", () => {
-  const paths = resolveDiagramOutputPaths(
+test("resolves custom Mermaid and PNG paths independently", async () => {
+  const paths = await resolveDiagramOutputPaths(
     ".output/custom/schema.mmd",
     ".output/images/inventory.png",
   );
@@ -62,13 +62,13 @@ test("resolves custom Mermaid and PNG paths independently", () => {
   assert.equal(paths.pngPath, resolve(process.cwd(), ".output/images/inventory.png"));
 });
 
-test("rejects output paths with the wrong extensions", () => {
-  assert.throws(
-    () => resolveDiagramOutputPaths(".output/schema.txt", ".output/schema.png"),
+test("rejects output paths with the wrong extensions", async () => {
+  await assert.rejects(
+    resolveDiagramOutputPaths(".output/schema.txt", ".output/schema.png"),
     /\.mmd/,
   );
-  assert.throws(
-    () => resolveDiagramOutputPaths(".output/schema.mmd", ".output/schema.svg"),
+  await assert.rejects(
+    resolveDiagramOutputPaths(".output/schema.mmd", ".output/schema.svg"),
     /\.png/,
   );
 });
@@ -79,20 +79,18 @@ test("requires each output parent path to be a directory", async () => {
 
   try {
     await writeFile(filePath, "existing file");
-    assert.throws(
-      () =>
-        resolveDiagramOutputPaths(
-          join(filePath, "schema.mmd"),
-          join(outputDir, "schema.png"),
-        ),
+    await assert.rejects(
+      resolveDiagramOutputPaths(
+        join(filePath, "schema.mmd"),
+        join(outputDir, "schema.png"),
+      ),
       /Mermaid output directory must be a directory/,
     );
-    assert.throws(
-      () =>
-        resolveDiagramOutputPaths(
-          join(outputDir, "schema.mmd"),
-          join(filePath, "schema.png"),
-        ),
+    await assert.rejects(
+      resolveDiagramOutputPaths(
+        join(outputDir, "schema.mmd"),
+        join(filePath, "schema.png"),
+      ),
       /PNG output directory must be a directory/,
     );
   } finally {
@@ -108,12 +106,12 @@ test("rejects directories used as output files", async () => {
   try {
     await mkdir(mermaidPath);
     await mkdir(pngPath);
-    assert.throws(
-      () => resolveDiagramOutputPaths(mermaidPath, join(outputDir, "other.png")),
+    await assert.rejects(
+      resolveDiagramOutputPaths(mermaidPath, join(outputDir, "other.png")),
       /Mermaid output path must be a file/,
     );
-    assert.throws(
-      () => resolveDiagramOutputPaths(join(outputDir, "other.mmd"), pngPath),
+    await assert.rejects(
+      resolveDiagramOutputPaths(join(outputDir, "other.mmd"), pngPath),
       /PNG output path must be a file/,
     );
   } finally {
