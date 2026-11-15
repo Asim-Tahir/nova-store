@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { run } from "@mermaid-js/mermaid-cli";
 import sql from "mssql";
 
-import { validateDirectory, validateExtension, validateFile } from "#scripts/utils";
+import { isFileExists, validateDirectory, validateExtension, validateFile } from "#scripts/utils";
 
 export interface DatabaseColumn {
   name: string;
@@ -111,9 +111,9 @@ function uniqueIdentifier(name: string, used: Set<string>): string {
   return candidate;
 }
 
-function loadDotEnvFile(dotEnvFile: string = ".env"): void {
+async function loadDotEnvFile(dotEnvFile: string = ".env"): Promise<void> {
   const envFile = resolve(projectRoot, dotEnvFile);
-  if (existsSync(envFile)) {
+  if (await isFileExists(envFile)) {
     process.loadEnvFile(envFile);
   }
 }
@@ -256,7 +256,7 @@ async function getDatabaseSchema(pool: sql.ConnectionPool): Promise<DatabaseTabl
 }
 
 async function generateDatabaseDiagram(paths: DiagramOutputPaths): Promise<DiagramOutputPaths> {
-  loadDotEnvFile();
+  await loadDotEnvFile();
 
   const username = process.env.MSSQL_SA_USERNAME;
   const password = process.env.MSSQL_SA_PASSWORD;
