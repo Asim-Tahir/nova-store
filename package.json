@@ -5,6 +5,7 @@
   "scripts": {
     "unify-queries": "tsx scripts/unify-queries.ts",
     "build-report": "tsx scripts/build-report.ts",
+    "generate-db-diagram": "tsx scripts/generate-db-diagram.ts",
     "test": "tsx --test"
   },
   "devDependencies": {
