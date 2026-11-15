@@ -1,9 +1,8 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
-import { styleText } from "node:util";
 import { fileURLToPath } from "node:url";
 
-import { validateDirectory, validateExtension, validateFile } from "#scripts/utils";
+import { logger, validateDirectory, validateExtension, validateFile } from "#scripts/utils";
 
 const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
 
@@ -55,5 +54,5 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
 
   const count = await unifyQueries(sqlSourceDir, sqlOutputPath);
 
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} Joined ${count} SQL files into ${sqlOutputPath}`);
+  logger.info(`Joined ${count} SQL files into ${sqlOutputPath}`);
 }
