@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import test from "node:test";
@@ -36,13 +36,14 @@ test("prepares one PNG image per result set", async () => {
 
 test("builds PNG result images and a DOCX", async () => {
   const outputDir = await mkdtemp(join(tmpdir(), "nova-store-build-report-"));
+  const docxPath = join(outputDir, "documents", "NovaStore_Proje.docx");
 
   try {
-    const files = await buildReport(outputDir);
-    const docx = await readFile(join(outputDir, "NovaStore_Proje.docx"));
+    const files = await buildReport(outputDir, docxPath);
+    const docx = await readFile(docxPath);
     const documentXml = execFileSync(
       "unzip",
-      ["-p", join(outputDir, "NovaStore_Proje.docx"), "word/document.xml"],
+      ["-p", docxPath, "word/document.xml"],
       { encoding: "utf8" },
     );
 
@@ -55,23 +56,27 @@ test("builds PNG result images and a DOCX", async () => {
     assert.ok(documentXml.includes("DATEDIFF"));
     assert.deepEqual(
       (await readdir(outputDir)).sort(),
-      [...files.map((file) => basename(file)), "NovaStore_Proje.docx"].sort(),
+      [...files.map((file) => basename(file)), "documents"].sort(),
     );
   } finally {
     await rm(outputDir, { recursive: true, force: true });
   }
 });
 
-test("uses the DOCX filename passed to the CLI", async () => {
+test("uses the DOCX path passed to the CLI", async () => {
   const outputDir = await mkdtemp(join(tmpdir(), "nova-store-build-report-"));
+  const docxPath = join(outputDir, "documents", "custom-report.docx");
+  const imageDir = join(outputDir, "images");
   const scriptFile = fileURLToPath(new URL("./build-report.ts", import.meta.url));
 
   try {
-    execFileSync(process.execPath, ["--import", "tsx", scriptFile, outputDir, "custom-report.docx"]);
+    await mkdir(join(outputDir, "documents"), { recursive: true });
+    await writeFile(docxPath, "existing file");
+    execFileSync(process.execPath, ["--import", "tsx", scriptFile, imageDir, docxPath]);
 
-    const docx = await readFile(join(outputDir, "custom-report.docx"));
+    const docx = await readFile(docxPath);
     assert.deepEqual([...docx.subarray(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
-    assert.equal((await readdir(outputDir)).includes("NovaStore_Proje.docx"), false);
+    assert.equal((await readdir(imageDir)).length, 6);
   } finally {
     await rm(outputDir, { recursive: true, force: true });
   }

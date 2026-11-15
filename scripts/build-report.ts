@@ -22,6 +22,8 @@ export interface ResultSet {
 }
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const DEFAULT_OUTPUT_DIR = resolve(projectRoot, ".output/report");
+const DEFAULT_DOCX_PATH = resolve(projectRoot, ".output/NovaStore_Proje.docx");
 
 export const RESULTS: ResultSet[] = [
   {
@@ -129,7 +131,7 @@ export const RESULTS: ResultSet[] = [
 ];
 
 export async function prepareResultImages(
-  outputDir = resolve(dirname(fileURLToPath(import.meta.url)), "../.output/report"),
+  outputDir = DEFAULT_OUTPUT_DIR,
 ): Promise<string[]> {
   await mkdir(outputDir, { recursive: true });
 
@@ -236,22 +238,24 @@ async function createReportDocx(files: string[], outputPath: string): Promise<vo
 }
 
 export async function buildReport(
-  outputDir = '.output/report',
-  docxFilename = "NovaStore_Proje.docx",
+  outputDir = DEFAULT_OUTPUT_DIR,
+  docxPath = DEFAULT_DOCX_PATH,
 ): Promise<string[]> {
   const resolvedOutputDir = resolve(projectRoot, outputDir);
+  const resolvedDocxPath = resolve(projectRoot, docxPath);
   const files = await prepareResultImages(resolvedOutputDir);
-  await createReportDocx(files, resolve(resolvedOutputDir, docxFilename));
+  await mkdir(dirname(resolvedDocxPath), { recursive: true });
+  await createReportDocx(files, resolvedDocxPath);
   return files;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  const outputDir = process.argv[2] ? resolve(process.argv[2]) : resolve(projectRoot, ".output/report");
-  const docxFilename = process.argv[3] ?? "NovaStore_Proje.docx";
+  const outputDir = process.argv[2] ? resolve(process.argv[2]) : DEFAULT_OUTPUT_DIR;
+  const docxPath = process.argv[3] ? resolve(process.argv[3]) : DEFAULT_DOCX_PATH;
 
-  const files = await buildReport(outputDir, docxFilename);
+  const files = await buildReport(outputDir, docxPath);
 
   console.log(`${styleText(["bgBlue", "white"], " INFO ")} Rendered ${files.length} PNG images in ${outputDir}`);
-  console.log(`${styleText(["bgBlue", "white"], " INFO ")} DOCX: ${resolve(outputDir, docxFilename)}`);
+  console.log(`${styleText(["bgBlue", "white"], " INFO ")} DOCX: ${docxPath}`);
   console.log(`${styleText(["bgBlue", "white"], " INFO ")} Summary: ${JSON.stringify(files, null, 2)}`);
 }
