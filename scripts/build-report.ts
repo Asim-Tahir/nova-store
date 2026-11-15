@@ -1,5 +1,5 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { dirname, extname, resolve } from "node:path";
 import { styleText } from "node:util";
 import { fileURLToPath } from "node:url";
 
@@ -252,6 +252,29 @@ export async function buildReport(
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   const outputDir = process.argv[2] ? resolve(process.argv[2]) : DEFAULT_OUTPUT_DIR;
   const docxPath = process.argv[3] ? resolve(process.argv[3]) : DEFAULT_DOCX_PATH;
+
+  if (extname(outputDir).toLowerCase() === ".docx") {
+    throw new Error(
+      "The first argument must be the image output directory; pass the DOCX path as the second argument.",
+    );
+  }
+  if (extname(docxPath).toLowerCase() !== ".docx") {
+    throw new Error("The second argument must be a DOCX output path ending in .docx.");
+  }
+  const outputDirStats = await stat(outputDir).catch((error) => {
+    if (typeof error === "object" && error !== null && "code" in error) {
+      if (error.code === "ENOENT") {
+        return undefined;
+      }
+      if (error.code === "ENOTDIR") {
+        throw new Error("The first argument must be a directory for report images.");
+      }
+    }
+    throw error;
+  });
+  if (outputDirStats && !outputDirStats.isDirectory()) {
+    throw new Error("The first argument must be a directory for report images.");
+  }
 
   const files = await buildReport(outputDir, docxPath);
 

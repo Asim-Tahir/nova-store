@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
@@ -79,6 +79,76 @@ test("uses the DOCX path passed to the CLI", async () => {
     assert.equal((await readdir(imageDir)).length, 6);
   } finally {
     await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects a DOCX path passed as the image output directory", async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), "nova-store-build-report-"));
+  const docxPath = join(outputDir, "custom-report.docx");
+  const scriptFile = fileURLToPath(new URL("./build-report.ts", import.meta.url));
+
+  try {
+    await writeFile(docxPath, "existing file");
+    const result = spawnSync(
+      process.execPath,
+      ["--import", "tsx", scriptFile, docxPath],
+      { encoding: "utf8" },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /DOCX path.*second argument/i);
+    assert.equal(await readFile(docxPath, "utf8"), "existing file");
+    assert.deepEqual(await readdir(outputDir), ["custom-report.docx"]);
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects a DOCX output path without a .docx extension", async () => {
+  const outputDir = await mkdtemp(join(tmpdir(), "nova-store-build-report-"));
+  const scriptFile = fileURLToPath(new URL("./build-report.ts", import.meta.url));
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        "tsx",
+        scriptFile,
+        join(outputDir, "images"),
+        join(outputDir, "custom-report.txt"),
+      ],
+      { encoding: "utf8" },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /second argument must be a DOCX.*\.docx/i);
+    assert.deepEqual(await readdir(outputDir), []);
+  } finally {
+    await rm(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects a file passed as the report image directory", async () => {
+  const projectDir = await mkdtemp(join(tmpdir(), "nova-store-build-report-"));
+  const outputDir = join(projectDir, "images");
+  const docxPath = join(projectDir, "report.docx");
+  const scriptFile = fileURLToPath(new URL("./build-report.ts", import.meta.url));
+
+  try {
+    await writeFile(outputDir, "existing file");
+    const result = spawnSync(
+      process.execPath,
+      ["--import", "tsx", scriptFile, outputDir, docxPath],
+      { encoding: "utf8" },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /first argument must be a directory/i);
+    assert.equal(await readFile(outputDir, "utf8"), "existing file");
+    assert.deepEqual(await readdir(projectDir), ["images"]);
+  } finally {
+    await rm(projectDir, { recursive: true, force: true });
   }
 });
 
